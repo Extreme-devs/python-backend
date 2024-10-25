@@ -69,6 +69,7 @@ def plan_trip(
     """
 
     return {
+        "title": _title,
         "map": _map,
         "markdown": markdown,
     }

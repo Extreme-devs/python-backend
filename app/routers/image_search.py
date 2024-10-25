@@ -7,7 +7,6 @@ from app.schemas.image_search import (
     BlogRequest,
     BlogResponse,
     GetPlanReq,
-    VideoRequest,
     VideoResponse,
 )
 from trip.generate_trip import plan_trip
@@ -57,22 +56,38 @@ async def search(req: ImageSearchRequest):
 
 
 @router.post("/blog", response_model=BlogResponse)
-async def generate_blogssss(req: BlogRequest):
-    start = req.start
-    end = req.end
+async def generate_blogssss(req: BlogRequest, request: Request):
+    # start = req.start
+    # end = req.end
+    headers = request.headers
+    authorization = headers.get("authorization")
+    token = authorization.split(" ")[1]
+
+    decoded_payload = jwt.decode(token, options={"verify_signature": False})
+    user_id = decoded_payload["id"]
+
     end = int(time.time())
     start = end - 24 * 3600 * 5
-    return {"blog": generate_blog(start, end)}
+
+    return {"blog": generate_blog(start, end, user_id, authorization)}
+
 
 @router.post("/vlog", response_model=VideoResponse)
-async def generate_vlogss(req: VideoRequest):
-    start = req.start
-    end = req.end
+async def generate_vlogss(request: Request):
+    # start = req.start
+    # end = req.end
     end = int(time.time())
     start = end - 24 * 3600 * 5
-    return {
-        "filename": generate_vlog(start, end)
-    }
+
+    headers = request.headers
+    authorization = headers.get("authorization")
+    token = authorization.split(" ")[1]
+
+    decoded_payload = jwt.decode(token, options={"verify_signature": False})
+    user_id = decoded_payload["id"]
+
+    return {"filename": generate_vlog(start, end, user_id, authorization)}
+
 
 @router.post("/get_plan")
 async def get_plan(req: GetPlanReq):

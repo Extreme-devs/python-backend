@@ -199,7 +199,9 @@ Format:
 ... write full name of hotels, restaurants, tourist attactions and locations you received separated by comma here. include as many as you can that came from the user ...
 </map>
 
-The user will provide you the necessary information. You have to use the information to create the trip plan for the user.
+The user will provide you the necessary information. You have to use the information to create the trip plan for the user. You must not provide any wrong information such as writing links like example.com, or providing wrong information about the hotels, restaurants, etc. This is serious business and you must provide the correct information.
+
+If any image or url is missing, don't make up any information. Just leave it blank.
 
 You must strictly follow the format provided above. You must provide detailed information in each section. You must provide the information in markdown format. You must resize the images to the specified width.
 

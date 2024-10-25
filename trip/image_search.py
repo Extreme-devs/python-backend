@@ -1,5 +1,10 @@
 from core.supabase import upload_file
-from core.langchain_prompts import ImageToTextPrompt, BlogGenerationPrompt, VlogGenerationPrompt, MusicGenerationPrompt
+from core.langchain_prompts import (
+    ImageToTextPrompt,
+    BlogGenerationPrompt,
+    VlogGenerationPrompt,
+    MusicGenerationPrompt,
+)
 from core.langchain_init import openAIEmbeddings
 from core.vector_db import qdrant_db
 from .download_music import download_track
@@ -8,6 +13,7 @@ import time
 import requests
 import uuid
 import json
+
 
 def upload_embedding(text: str, payload: dict):
     embedding = openAIEmbeddings.embed_query(text)
@@ -77,10 +83,19 @@ def image_search(text: str, user_id: int):
     return {"urls": urls}
 
 
-def generate_vlog(start: int, end: int):
+def generate_vlog(start: int, end: int, user_id: int, authorization: str):
     print("Calling generate blog...")
-    results = qdrant_db.get_range(start, end, collection_name="image_descriptions")
-    data = ""
+    plans = requests.get(
+        "http://172.28.31.70:3000/api/v1/plans",
+        headers={"Authorization": authorization},
+    )
+    j = plans.json()
+
+    results = qdrant_db.get_range(
+        start, end, collection_name="image_descriptions", filter={"user_id": user_id}
+    )
+    data = "TRIP DETAILS in MARKDOWN\n\n"
+    data += j[0]["data"]
     index = 1
     for result in results[0]:
         data += "Image " + str(index) + "\n"
@@ -97,25 +112,35 @@ def generate_vlog(start: int, end: int):
     music_name = MusicGenerationPrompt.invoke({"trip_details": data}).content
     print(music_name)
     music_name = music_name.split("<output>")[1].split("</output>")[0]
-    print('Downloading music...')
+    print("Downloading music...")
     download_track(music_name, "x.mp3")
-    print('Generating video script...')
+    print("Generating video script...")
     x = VlogGenerationPrompt.invoke({"trip_details": data}).content
     print(x)
-    if '```json' in x:
-        x = x.split('```json')[1].split('```')[0]
-    print('Generating video...')
+    if "```json" in x:
+        x = x.split("```json")[1].split("```")[0]
+    print("Generating video...")
     x = eval(x)
     x["background_music"] = "x.mp3"
     output_file = generate_video(x)
-    print('Uploading video...')
+    print("Uploading video...")
     upload_file(output_file)
     return output_file
-    
-def generate_blog(start: int, end: int):
+
+
+def generate_blog(start: int, end: int, user_id: int, authorization: str):
     print("Calling generate blog...")
-    results = qdrant_db.get_range(start, end, collection_name="image_descriptions")
-    data = ""
+    plans = requests.get(
+        "http://172.28.31.70:3000/api/v1/plans",
+        headers={"Authorization": authorization},
+    )
+    j = plans.json()
+    results = qdrant_db.get_range(
+        start, end, user_id, collection_name="image_descriptions"
+    )
+    data = "TRIP DETAILS in MARKDOWN\n\n"
+    data += j[0]["data"]
+
     index = 1
     for result in results[0]:
         data += "Image " + str(index) + "\n"
@@ -131,6 +156,6 @@ def generate_blog(start: int, end: int):
     print("Generating blog...")
     x = BlogGenerationPrompt.invoke({"photos": data}).content
     print(x)
-    if '```html' in x:
-        x = x.split('```html')[1].replace('```','')
+    if "```html" in x:
+        x = x.split("```html")[1].replace("```", "")
     return x

@@ -48,12 +48,6 @@ class BlogResponse(BaseModel):
     class Config:
         orm_mode = True
 
-class VideoRequest(BaseModel):
-    start: int
-    end: int
-
-    class Config:
-        orm_mode = True
 
 class VideoResponse(BaseModel):
     filename: str

@@ -327,7 +327,7 @@ class QdrantDB(VectorDB):
         return point_count.count
 
     @override
-    def get_range(self, l, r, collection_name: str):
+    def get_range(self, l, r, user_id, collection_name: str):
         print("Getting range")
         time_filter = Filter(
             must=[
@@ -339,7 +339,13 @@ class QdrantDB(VectorDB):
                         lt=None,
                         lte=r,
                     ),
-                )
+                ),
+                models.FieldCondition(
+                    key="user_id",
+                    match=models.MatchValue(
+                        value=user_id,
+                    ),
+                ),
             ]
         )
         response = self.client.scroll(
