@@ -1,0 +1,13 @@
+fastapi
+pydantic
+sqlalchemy
+asyncpg
+uvicorn
+python-dotenv
+rich
+langchain
+langchain_openai
+langchain_community
+tiktoken
+qdrant_client
+python-jose[cryptography]
